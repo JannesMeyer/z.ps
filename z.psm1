@@ -1,16 +1,26 @@
-﻿<#
-Port of z.sh to PowerShell
-#>
+﻿#
+# Port of z.sh to PowerShell
+#
+
 
 $dbfile = "$env:UserProfile\NavigationDatabase.csv"
 
 function Update-NavigationHistory() {
-	Param($Path)
+	Param(
+        [parameter(Mandatory=$true, ValueFromRemainingArguments=$true, ValueFromPipeline=$true)]
+		[string]
+        $Path
+    )
 
-    # TODO: Check if we own the file
+    # Load database
+    try {
+        # TODO: Check if we own the file
+	    $navdb = Import-CSV $dbfile
+    } catch [System.IO.FileNotFoundException] {
+        # Database file doesn't exist yet
+        #$_.Exception.Message
 
-	$navdb = Import-CSV "$env:UserProfile\NavigationDatabase.csv"
-	#$navdb | ? { $_.Path -eq $Path }
+    }
 
 
 	# Get a temporary file
@@ -19,10 +29,10 @@ function Update-NavigationHistory() {
 }
 
 function Calculate-Frecent() {
-    Param($Frequency, $LastAccess)
+    Param([double]$Frequency, [int64]$LastAccess)
 
     #$now = (Get-Date).ToFileTimeUtc()
-    $now = [int][double]::Parse((Get-Date (Get-Date).ToUniversalTime() -UFormat %s))
+    $now = [int32][double]::Parse((Get-Date (Get-Date).ToUniversalTime() -UFormat %s))
     $dt = $now - $LastAccess
 
     if ($dt -lt 3600) {
@@ -79,8 +89,7 @@ function Search-NavigationHistory() {
     } catch [System.IO.FileNotFoundException] {
         # TODO: Exception?
         # Database file doesn't exist yet
-        Write-Host $_.Exception.Message
-        return
+        return $_.Exception.Message
     }
 
     # Create a non-fixed Array
@@ -91,23 +100,24 @@ function Search-NavigationHistory() {
         if (-not (Test-Path $item.Path)) {
             continue # TODO: Delete item (when updating)
         }
-
-        # Populate rank
-        $item.Rank = switch($SortOrder) {
-            "Frequency"  { [double]$item.Frequency }
-            "LastAccess" { [double]$item.LastAccess }
-            default      { Calculate-Frecent [double]$item.Frequency [double]$item.LastAccess }
+        # Enhance item with Rank
+        [double]$item.Rank = switch($SortOrder) {
+            "Frequency"  { $item.Frequency }
+            "LastAccess" { $item.LastAccess }
+            default      { Calculate-Frecent $item.Frequency $item.LastAccess }
         }
         # Must match all patterns
         if (Match-Patterns $item.Path $PatternList) {
             $candidates.Add($item) | Out-Null
         }
     }
-    #$hashtable.GetEnumerator() | sort Value -Descending | select -First 1
-    #$candidates | Measure-Object -Maximum Rank
-    #$candidates | Select-Object -Property Path, Rank | Sort-Object -Descending Rank | Out-GridView
+    if (!$candidates) {
+        return "No matches found"
+    }
+    # Display/Go to the result
     if ($List) {
         $candidates | Sort-Object -Descending Rank | Format-Table -Property Path, Rank
+        #$candidates | Select-Object -Property Path, Rank | Sort-Object -Descending Rank | Out-GridView
     } else {
         $result = $candidates | Sort-Object -Descending Rank | Select-Object -First 1
         Set-Location $result.Path
@@ -116,4 +126,12 @@ function Search-NavigationHistory() {
 Set-Alias z Search-NavigationHistory
 
 
-z ja -s Frequency -l
+#z ja -s Frequency -l
+
+# Existing entry
+#Update-NavigationHistory "C:\Users\Jannes\web\citytagger"
+
+# New Entry
+Update-NavigationHistory "C:\Users\Jannes\jngl-py"
+
+Export-ModuleMember -Function Update-NavigationHistory, Search-NavigationHistory
