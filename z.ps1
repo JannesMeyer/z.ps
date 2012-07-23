@@ -52,102 +52,68 @@ function Search-NavigationHistory() {
 	Param(
 		[parameter(ValueFromRemainingArguments=$true, ValueFromPipeline=$true, Position=0)]
 		[string]
-		$Terms,
+		$Patterns,
 
 		[Switch]
 		$List,
 
 		[ValidateSet("Default", "LastAccess", "Frequency")]
 		[string]
-		$SortOrder="Default"
+		$SortOrder="Frequency"
 	)
 
-    <#if (!(Test-Path $dbfile)) {
-        # No database exists yet
-        # TODO: Exception
-        Write-Error "Database file doesn't exist yet"
-        return
-    } else {
-        # TODO: Check if we own the file
-    }#>
-
-	if ([string]::IsNullOrEmpty($Terms)) {
+	if ([string]::IsNullOrEmpty($Patterns)) {
         # No search terms given, list everything
 		$List = $true
-        $TermList = @()
+        $PatternList = @()
 	} else {
         # Convert search terms to Array
-        $TermList = $Terms.Split()
+        $PatternList = $Patterns.Split()
     }
-
-    # DEBUG:
-    #Write-Host ""
-	#Write-Host "Search terms:" $TermList
-	#Write-Host "List:" $List
-	#Write-Host "SortOrder:" $SortOrder
-    #Write-Host ""
 
 	# Load database
     try {
+        # TODO: Check if we own the file. Lol why?
 	    $navdb = Import-CSV $dbfile
         $navdb | Add-Member -MemberType NoteProperty -Name 'Rank' -Value 0
     } catch [System.IO.FileNotFoundException] {
-        # No database exists yet
+        # TODO: Exception?
+        # Database file doesn't exist yet
         Write-Host $_.Exception.Message
         return
     }
 
-    #$candidates = @()
     # Create a non-fixed Array
     $candidates = New-Object System.Collections.ArrayList
-
+    # Iterate over every entry in the file
     foreach ($item in $navdb) {
-        # Just ignore the entry if the path doesn't exist
+        # Ignore this item, if the path doesn't exist
         if (-not (Test-Path $item.Path)) {
-            # TODO: Delete item (only when adding)
-            continue
+            continue # TODO: Delete item (when updating)
         }
 
-        # Populate rank hash tables
+        # Populate rank
         $item.Rank = switch($SortOrder) {
             "Frequency"  { [double]$item.Frequency }
             "LastAccess" { [double]$item.LastAccess }
             default      { Calculate-Frecent [double]$item.Frequency [double]$item.LastAccess }
         }
-        #$candidates += $item
-        
-        
-        # Path must match all of the terms,
-        # so remove if it doesn't match one of them
-        if (Match-Patterns $item.Path $TermList) {
-            $candidates.Add($item)
+        # Must match all patterns
+        if (Match-Patterns $item.Path $PatternList) {
+            $candidates.Add($item) | Out-Null
         }
-        #foreach ($term in $TermList) {
-        #    if ($item.Path -notmatch $term) {
-        #        #get-member -InputObject $candidates
-        #        $candidates.RemoveAt($candidates.Count - 1)
-        #        #$last = $candidates.Length - 2
-        #        #$candidates = $candidates[0..$last]
-        #        break
-        #    }
-        #}
     }
+    #$hashtable.GetEnumerator() | sort Value -Descending | select -First 1
     #$candidates | Measure-Object -Maximum Rank
-    
     #$candidates | Select-Object -Property Path, Rank | Sort-Object -Descending Rank | Out-GridView
-    $candidates | Sort-Object -Descending Rank | Format-Table -Property Path, Rank
-    #$wcase2 = $wcase.GetEnumerator() | sort Value -Descending | select -First 1
-    #$nocase2 = $nocase.GetEnumerator() | sort Value -Descending | select -First 1
-
-    #if ($wcase2) {
-    #    "Case-sensitive match:"
-    #    $wcase2
-    #} elseif ($nocase2) {
-    #    "Case-insensitive match:"
-    #    $nocase2
-    #}
+    if ($List) {
+        $candidates | Sort-Object -Descending Rank | Format-Table -Property Path, Rank
+    } else {
+        $result = $candidates | Sort-Object -Descending Rank | Select-Object -First 1
+        Set-Location $result.Path
+    }
 }
 Set-Alias z Search-NavigationHistory
 
 
-z ja -SortOrder Frequency
+z ja -s Frequency -l
