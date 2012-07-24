@@ -4,6 +4,9 @@
 
 $dbfile = "$env:UserProfile\navdb.csv"
 
+# Execution time:
+# Measure-Command { Update-NavigationHistory $pwd.Path }
+
 function Calculate-FrecencyValue() {
 	Param([Int64]$Frequency, [Int64]$LastAccess)
 
@@ -44,7 +47,7 @@ function Update-NavigationHistory() {
 
 	# Import database
 	try {
-		[Array]$navdb = Import-Csv $dbfile -Encoding "Unicode"
+		[Array]$navdb = @(Import-Csv $dbfile -Encoding 'Unicode')
 	} catch [System.IO.FileNotFoundException] {
 		[Array]$navdb = @()
 	}
@@ -53,10 +56,11 @@ function Update-NavigationHistory() {
 	$found = $false
 	foreach ($item in $navdb) {
 		# Filter out all directories that don't exist
+		<# Test-Path is a little slow
 		if (!(Test-Path $item.Path)) {
 			# TODO: Delete item
 			continue
-		}
+		}#>
 
 		# Update Frequency and LastAccess time
 		if ($item.Path -eq $Path) {
@@ -82,7 +86,7 @@ function Update-NavigationHistory() {
 
 	# Save database
 	try {
-		$navdb | Export-Csv -Path $dbfile -NoTypeInformation -Encoding "Unicode"
+		$navdb | Export-Csv -Path $dbfile -NoTypeInformation -Encoding 'Unicode'
 	} catch {
 		Write-Output $_.Exception.Message
 	}
@@ -113,7 +117,7 @@ function Search-NavigationHistory() {
 
 	# Import database
 	try {
-		[Array]$navdb = Import-Csv $dbfile -Encoding "Unicode"
+		[Array]$navdb = Import-Csv $dbfile -Encoding 'Unicode'
 		$navdb | Add-Member -MemberType NoteProperty -Name 'Rank' -Value 0
 	} catch [System.IO.FileNotFoundException] {
 		Write-Output $_.Exception.Message
