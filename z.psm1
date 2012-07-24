@@ -44,7 +44,7 @@ function Update-NavigationHistory() {
 
 	# Import database
 	try {
-		[Array]$navdb = @(Import-Csv $dbfile)
+		[Array]$navdb = Import-Csv $dbfile -Encoding "Unicode"
 	} catch [System.IO.FileNotFoundException] {
 		[Array]$navdb = @()
 	}
@@ -82,7 +82,7 @@ function Update-NavigationHistory() {
 
 	# Save database
 	try {
-		$navdb | Export-Csv -Path $dbfile -NoTypeInformation -Encoding "unicode"
+		$navdb | Export-Csv -Path $dbfile -NoTypeInformation -Encoding "Unicode"
 	} catch {
 		Write-Output $_.Exception.Message
 	}
@@ -113,7 +113,7 @@ function Search-NavigationHistory() {
 
 	# Import database
 	try {
-		$navdb = Import-CSV $dbfile
+		[Array]$navdb = Import-Csv $dbfile -Encoding "Unicode"
 		$navdb | Add-Member -MemberType NoteProperty -Name 'Rank' -Value 0
 	} catch [System.IO.FileNotFoundException] {
 		Write-Output $_.Exception.Message
