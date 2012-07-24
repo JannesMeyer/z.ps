@@ -4,6 +4,9 @@
 
 $dbfile = "$env:UserProfile\navdb.csv"
 
+# Tip:
+# You should combine this script with "Push-Location" and "Pop-Location"
+
 # Execution time:
 # Measure-Command { Update-NavigationHistory $pwd.Path }
 
