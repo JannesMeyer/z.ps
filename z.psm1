@@ -7,10 +7,14 @@ $dbfile = "$env:UserProfile\navdb.csv"
 # Tip:
 # You should combine this script with "Push-Location" and "Pop-Location"
 
+# Get-Module -ListAvailable
+# Get-Module
+# Get-Command -Module z
+
 # Execution time:
 # Measure-Command { Update-NavigationHistory $pwd.Path }
 
-function Calculate-FrecencyValue() {
+function Calculate-FrecencyValue {
 	Param([Int64]$Frequency, [Int64]$LastAccess)
 
 	$now = [DateTime]::UtcNow
@@ -24,18 +28,50 @@ function Calculate-FrecencyValue() {
 	return $factor * $Frequency
 }
 
-function MatchAll-Patterns() {
+function MatchAll-Patterns {
 	Param([String]$string, [Array][String]$patterns)
 	
 	foreach ($pattern in $patterns) {
-		if ($string -notmatch $pattern) {
+		if ($string -inotmatch $pattern) {
 			return $false
 		}
 	}
 	return $true
 }
 
-function Update-NavigationHistory() {
+function Optimize-NavigationHistory {
+	# Make sure that all external hard drives are
+	# plugged in before you continue
+
+	# Import database
+	try {
+		[Array]$navdb = @(Import-Csv $dbfile -Encoding 'Unicode')
+	} catch {
+		$_.Exception.Message
+		return
+	}
+
+	# TODO: Filter out all directories that don't exist
+	# TODO: Filter out the directories that haven't been used in the last 3 months
+	# TODO: Sort database highest rank first?
+	foreach ($item in $navdb) {
+		<#
+		if (!(Test-Path $item.Path)) {
+			# TODO: Delete item
+			continue
+		}
+		#>
+	}
+
+	# Save database
+	try {
+		$navdb | Export-Csv -Path $dbfile -NoTypeInformation -Encoding 'Unicode'
+	} catch {
+		$_.Exception.Message
+	}
+}
+
+function Update-NavigationHistory {
 	#[CmdletBinding()]
 	Param(
 		[parameter(Mandatory=$true)]
@@ -51,6 +87,7 @@ function Update-NavigationHistory() {
 	# Import database
 	try {
 		[Array]$navdb = @(Import-Csv $dbfile -Encoding 'Unicode')
+		# TODO: Write a function that handles the database import
 	} catch [System.IO.FileNotFoundException] {
 		[Array]$navdb = @()
 	}
@@ -58,13 +95,6 @@ function Update-NavigationHistory() {
 	# Look for an existing record and update it accordingly
 	$found = $false
 	foreach ($item in $navdb) {
-		# Filter out all directories that don't exist
-		<# Test-Path is a little slow
-		if (!(Test-Path $item.Path)) {
-			# TODO: Delete item
-			continue
-		}#>
-
 		# Update Frequency and LastAccess time
 		if ($item.Path -eq $Path) {
 			$found = $true
@@ -95,7 +125,7 @@ function Update-NavigationHistory() {
 	}
 }
 
-function Search-NavigationHistory() {
+function Search-NavigationHistory {
 	Param(
 		[parameter(ValueFromRemainingArguments=$true, ValueFromPipeline=$true, Position=0)]
 		[String]
@@ -121,10 +151,11 @@ function Search-NavigationHistory() {
 	# Import database
 	try {
 		[Array]$navdb = Import-Csv $dbfile -Encoding 'Unicode'
-		$navdb | Add-Member -MemberType NoteProperty -Name 'Rank' -Value 0
 	} catch [System.IO.FileNotFoundException] {
-		Write-Output $_.Exception.Message
+		$_.Exception.Message
+		return
 	}
+	$navdb | Add-Member -MemberType NoteProperty -Name 'Rank' -Value 0
 
 	# Create a non-fixed-size Array
 	$candidates = New-Object System.Collections.ArrayList
@@ -161,5 +192,3 @@ function Search-NavigationHistory() {
 		Set-Location $winner.Path
 	}
 }
-
-Export-ModuleMember -Function Update-NavigationHistory, Search-NavigationHistory
