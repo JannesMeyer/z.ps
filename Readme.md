@@ -34,7 +34,7 @@ Just cd around for a while to let the tool learn your directories.
 
 Then you can use it as follows.
 
-	z asd (where asd is part of your path name)
+	z asd   # (where 'asd' is part of your path name)
 
 You can also see a list of all matches before going there.
 
@@ -42,7 +42,7 @@ You can also see a list of all matches before going there.
 
 Furthermore, you can change the sort algorithm to prioritize recent locations, for example. (The default priorization is a combination of frequency and recency.)
 
-	z -s recent asd
+	z -l -s recent asd
 
 The full output of `Get-Help z` looks like this:
 
