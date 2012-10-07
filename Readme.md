@@ -34,7 +34,7 @@ Just cd around for a while to let the tool learn your directories.
 
 Then you can use it as follows.
 
-	z asd   # (where 'asd' is part of your path name)
+	z asd   # (where 'asd' is part of your desired location's path name)
 
 You can also see a list of all matches before going there.
 
