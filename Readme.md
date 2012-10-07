@@ -3,7 +3,7 @@ z.ps
 
 This little tool lets you jump directly to your frequently used directories in PowerShell.
 
-![Screenshot][http://i.imgur.com/V2XR0.png]
+![Screenshot](http://i.imgur.com/V2XR0.png)
 
 
 Installation
