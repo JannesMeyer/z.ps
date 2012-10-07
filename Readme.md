@@ -1,5 +1,13 @@
+z.ps
+====
+
+This little tool lets you jump directly to your frequently used directories in PowerShell.
+
+![Screenshot][http://i.imgur.com/V2XR0.png]
+
+
 Installation
-============
+------------
 
  1. Start PowerShell
 
@@ -8,9 +16,7 @@ Installation
 
  3. `cd ~\Documents\WindowsPowerShell\Modules`
 
- 4. Download z.ps
-
-    `git clone https://github.com/JannesMeyer/z.ps.git z`
+ 4. `git clone https://github.com/JannesMeyer/z.ps.git z`
 
  5. Include this in your `~\Documents\WindowsPowerShell\profile.ps1` (or create a new one if the file doesn't exist yet)
 
@@ -22,7 +28,7 @@ Installation
 
 
 License
-=======
+-------
 
 WTFPL
 
@@ -30,6 +36,6 @@ This program is free software. It comes without any warranty, to the extent perm
 
 
 Planned
-=======
+-------
 
 Make module installation easier using http://psget.net/
