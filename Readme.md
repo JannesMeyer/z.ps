@@ -27,6 +27,28 @@ Installation
 		}
 
 
+Usage
+-----
+
+Just cd around for a while to let the tool learn your directories.
+
+Then you can use it as follows.
+
+	z asd (where asd is part of your path name)
+
+You can also see a list of all matches before going there.
+
+	z -l asd
+
+Furthermore, you can change the sort algorithm to prioritize recent locations, for example. (The default priorization is a combination of frequency and recency.)
+
+	z -s recent asd
+
+The full output of `Get-Help z` looks like this:
+
+	z [[-Patterns] <string>] [-List] [-SortOrder <string> {Default | Recent | Frequent}]  [<CommonParameters>]
+
+
 License
 -------
 
