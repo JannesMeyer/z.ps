@@ -12,7 +12,7 @@ Installation
  1. Start PowerShell
 
  2. `mkdir ~\Documents\WindowsPowerShell\Modules`
-(skip this step if the directory already exists)
+(skip this step if the directory already exists or go somewhere else in your `$Env:PSModulePath`)
 
  3. `cd ~\Documents\WindowsPowerShell\Modules`
 
