@@ -11,14 +11,14 @@ Installation
 
  1. Start PowerShell
 
- 2. `mkdir ~\Documents\WindowsPowerShell\Modules`
+ 2. `mkdir '~\My Documents\WindowsPowerShell\Modules'`
 (skip this step if the directory already exists or go somewhere else in your `$Env:PSModulePath`)
 
- 3. `cd ~\Documents\WindowsPowerShell\Modules`
+ 3. `cd '~\My Documents\WindowsPowerShell\Modules'`
 
  4. `git clone https://github.com/JannesMeyer/z.ps.git z`
 
- 5. Include this in your `~\Documents\WindowsPowerShell\profile.ps1` (or create a new one if the file doesn't exist yet)
+ 5. Include this in your `~\My Documents\WindowsPowerShell\profile.ps1` (or create a new one if the file doesn't exist yet)
 
 		Import-Module z
 		Set-Alias z Search-NavigationHistory
