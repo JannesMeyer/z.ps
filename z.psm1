@@ -185,6 +185,19 @@ function Search-NavigationHistory {
 		[Array]$PatternList = $Patterns.Split()
 	}
 
+	# Jump directly for a existing path name
+    if (($PatternList.Count -eq 1) -and (-Not $List)) {
+		if ($PatternList[0] -eq '-') {
+			Pop-Location
+			return
+		}
+		if (Test-path $PatternList[0]) {
+			Set-Location $PatternList[0]
+			return
+		}
+	}
+
+
 	# Import database
 	try {
 		[Array]$navdb = Import-Csv $dbfile -Encoding 'Unicode'
