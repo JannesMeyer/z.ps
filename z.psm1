@@ -31,11 +31,22 @@ function Calculate-FrecencyValue {
 function MatchAll-Patterns {
 	Param([String]$string, [Array][String]$patterns)
 	
+	$lastpos = -1
 	foreach ($pattern in $patterns) {
-		if ($string -inotmatch $pattern) {
+		$match = [regex]::Match($string, $pattern, 
+				[System.StringComparison]::OrdinalIgnoreCase)
+		if ($Match.Success) {
+			$index = $Match.Index
+			if ($index -gt $lastpos) {
+				$lastpos = $index
+			}	else {
+				return $false
+			}
+		}	else {
 			return $false
 		}
 	}
+
 	return $true
 }
 
@@ -193,3 +204,6 @@ function Search-NavigationHistory {
 		Set-Location $winner.Path
 	}
 }
+
+
+
