@@ -31,17 +31,19 @@ function Calculate-FrecencyValue {
 function MatchAll-Patterns {
 	Param([String]$string, [Array][String]$patterns)
 	
-	$lastpos = -1
+	# foreach ($pattern in $patterns) {
+	# 	if ($string -inotmatch $pattern) {
+	# 		return $false
+	# 	}
+	# }
+
+	$teststring = $string
+
 	foreach ($pattern in $patterns) {
-		$match = [regex]::Match($string, $pattern, 
-				[System.StringComparison]::OrdinalIgnoreCase)
-		if ($Match.Success) {
-			$index = $Match.Index
-			if ($index -gt $lastpos) {
-				$lastpos = $index
-			}	else {
-				return $false
-			}
+		if ($teststring -imatch $pattern) {
+			$index = $teststring.IndexOf($matches[0])
+			$size = $matches[0].length
+			$teststring = $teststring.Substring($index + $size)
 		}	else {
 			return $false
 		}
