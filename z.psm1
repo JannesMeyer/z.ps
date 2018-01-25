@@ -126,9 +126,32 @@ function Update-NavigationHistory {
 		# TODO: Append only one item instead of rewriting the whole file?
 	}
 
-	# TODO: Age the complete database if the compound score is above 1000
-	#$navdb | Measure-Object -Sum Frequency
-	#if ($navdb.Count -gt 1000) {}
+	# Filter out all directories that don't exist
+	$total = 0
+	[Array]$newdb = @()
+
+	foreach ($item in $navdb) {
+		if (Test-path $item.Path) {
+			$newdb += $item
+			$total += $item.Frequency
+		}
+	}
+
+	$navdb = $newdb
+	
+	# Age the complete database if the compound score is above 1000
+	if ($total -gt 1000) {
+		$newdb = @()
+		foreach ($item in $navdb) {
+			[double]$freq = [double]$item.Frequency
+			[Int64]$newf = [math]::floor($freq * 0.9)
+			if ($newf -gt 0) {
+				[Int64]$item.Frequency = [Int64]$newf
+				$newdb += $item
+			}
+		}
+		$navdb = $newdb
+	}
 
 	# Save database
 	try {
@@ -137,6 +160,7 @@ function Update-NavigationHistory {
 		Write-Output $_.Exception.Message
 	}
 }
+
 
 function Search-NavigationHistory {
 	Param(
