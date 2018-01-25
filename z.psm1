@@ -152,7 +152,8 @@ function Search-NavigationHistory {
 	try {
 		[Array]$navdb = Import-Csv $dbfile -Encoding 'Unicode'
 	} catch [System.IO.FileNotFoundException] {
-		$_.Exception.Message
+		# $_.Exception.Message
+		""
 		return
 	}
 	$navdb | Add-Member -MemberType NoteProperty -Name 'Rank' -Value 0
