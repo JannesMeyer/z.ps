@@ -2,7 +2,12 @@
 # PowerShell port of z.sh
 #
 
-$dbfile = "$env:UserProfile\.navdb.csv"
+$dbfile = "$env:UserProfile\navdb.csv"
+
+if ($env:Z_NAVDB_FILE -ne $null) {
+	$dbfile = $env:Z_NAVDB_FILE
+}
+
 
 # Tip:
 # You should combine this script with "Push-Location" and "Pop-Location"
@@ -131,10 +136,15 @@ function Update-NavigationHistory {
 	[Array]$newdb = @()
 
 	foreach ($item in $navdb) {
-		if (Test-path $item.Path) {
-			$newdb += $item
+		# Check if $Env:Z_FILTER_BAD_DIR is undefined
+		if ($Env:Z_FILTER_BAD_DIR -eq $null) {
 			$total += $item.Frequency
+			$newdb += $item
 		}
+		elseif (Test-path $item.Path) {
+			$total += $item.Frequency
+			$newdb += $item
+		}	
 	}
 
 	$navdb = $newdb
@@ -185,15 +195,17 @@ function Search-NavigationHistory {
 		[Array]$PatternList = $Patterns.Split()
 	}
 
-	# Jump directly for a existing path name
+	# Jump directly for a existing absolute path name
     if (($PatternList.Count -eq 1) -and (-Not $List)) {
 		if ($PatternList[0] -eq '-') {
 			Pop-Location
 			return
 		}
-		if (Test-path $PatternList[0]) {
-			Set-Location $PatternList[0]
-			return
+		if (Test-path -PathType Container $PatternList[0]) {
+			if ([System.IO.Path]::IsPathRooted($PatternList[0])) {
+				Set-Location $PatternList[0]
+				return
+			}
 		}
 	}
 
