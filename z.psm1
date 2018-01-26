@@ -36,12 +36,6 @@ function Calculate-FrecencyValue {
 function MatchAll-Patterns {
 	Param([String]$string, [Array][String]$patterns)
 	
-	# foreach ($pattern in $patterns) {
-	# 	if ($string -inotmatch $pattern) {
-	# 		return $false
-	# 	}
-	# }
-
 	$teststring = $string
 
 	foreach ($pattern in $patterns) {
