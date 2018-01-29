@@ -4,6 +4,11 @@
 
 $dbfile = "$env:UserProfile\navdb.csv"
 
+if ($env:Z_NAVDB_FILE -ne $null) {
+	$dbfile = $env:Z_NAVDB_FILE
+}
+
+
 # Tip:
 # You should combine this script with "Push-Location" and "Pop-Location"
 
@@ -31,11 +36,18 @@ function Calculate-FrecencyValue {
 function MatchAll-Patterns {
 	Param([String]$string, [Array][String]$patterns)
 	
+	$teststring = $string
+
 	foreach ($pattern in $patterns) {
-		if ($string -inotmatch $pattern) {
+		if ($teststring -imatch $pattern) {
+			$index = $teststring.IndexOf($matches[0])
+			$size = $matches[0].length
+			$teststring = $teststring.Substring($index + $size)
+		}	else {
 			return $false
 		}
 	}
+
 	return $true
 }
 
@@ -113,9 +125,37 @@ function Update-NavigationHistory {
 		# TODO: Append only one item instead of rewriting the whole file?
 	}
 
-	# TODO: Age the complete database if the compound score is above 1000
-	#$navdb | Measure-Object -Sum Frequency
-	#if ($navdb.Count -gt 1000) {}
+	# Filter out all directories that don't exist
+	$total = 0
+	[Array]$newdb = @()
+
+	foreach ($item in $navdb) {
+		# Check if $Env:Z_FILTER_BAD_DIR is undefined
+		if ($Env:Z_FILTER_BAD_DIR -eq $null) {
+			$total += $item.Frequency
+			$newdb += $item
+		}
+		elseif (Test-path $item.Path) {
+			$total += $item.Frequency
+			$newdb += $item
+		}	
+	}
+
+	$navdb = $newdb
+	
+	# Age the complete database if the compound score is above 1000
+	if ($total -gt 1000) {
+		$newdb = @()
+		foreach ($item in $navdb) {
+			[double]$freq = [double]$item.Frequency
+			[Int64]$newf = [math]::floor($freq * 0.9)
+			if ($newf -gt 0) {
+				[Int64]$item.Frequency = [Int64]$newf
+				$newdb += $item
+			}
+		}
+		$navdb = $newdb
+	}
 
 	# Save database
 	try {
@@ -124,6 +164,7 @@ function Update-NavigationHistory {
 		Write-Output $_.Exception.Message
 	}
 }
+
 
 function Search-NavigationHistory {
 	Param(
@@ -148,11 +189,27 @@ function Search-NavigationHistory {
 		[Array]$PatternList = $Patterns.Split()
 	}
 
+	# Jump directly for a existing absolute path name
+    if (($PatternList.Count -eq 1) -and (-Not $List)) {
+		if ($PatternList[0] -eq '-') {
+			Pop-Location
+			return
+		}
+		if (Test-path -PathType Container $PatternList[0]) {
+			if ([System.IO.Path]::IsPathRooted($PatternList[0])) {
+				Set-Location $PatternList[0]
+				return
+			}
+		}
+	}
+
+
 	# Import database
 	try {
 		[Array]$navdb = Import-Csv $dbfile -Encoding 'Unicode'
 	} catch [System.IO.FileNotFoundException] {
-		$_.Exception.Message
+		# $_.Exception.Message
+		""
 		return
 	}
 	$navdb | Add-Member -MemberType NoteProperty -Name 'Rank' -Value 0
@@ -192,3 +249,6 @@ function Search-NavigationHistory {
 		Set-Location $winner.Path
 	}
 }
+
+
+
