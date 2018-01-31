@@ -143,8 +143,8 @@ function Update-NavigationHistory {
 
 	$navdb = $newdb
 	
-	# Age the complete database if the compound score is above 1000
-	if ($total -gt 1000) {
+	# Age the complete database if the compound score is above 9000
+	if ($total -gt 9000) {
 		$newdb = @()
 		foreach ($item in $navdb) {
 			[double]$freq = [double]$item.Frequency
