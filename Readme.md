@@ -11,20 +11,26 @@ Installation
 
  1. Start PowerShell
 
- 2. `mkdir '~\My Documents\WindowsPowerShell\Modules'`
-(skip this step if the directory already exists or go somewhere else in your `$Env:PSModulePath`)
+ 2. `mkdir ~\Documents\WindowsPowerShell\Modules`
+(skip this step if the directory already exists or if you want to install the module somewhere else in your `$Env:PSModulePath`)
 
- 3. `cd '~\My Documents\WindowsPowerShell\Modules'`
+ 3. `cd ~\Documents\WindowsPowerShell\Modules`
 
  4. `git clone https://github.com/JannesMeyer/z.ps.git z`
 
- 5. Include this in your `~\My Documents\WindowsPowerShell\profile.ps1` (or create a new one if the file doesn't exist yet)
+ 5. Include these lines in your `Profile.ps1` (usually located in `~\Documents\WindowsPowerShell`)
 
 		Import-Module z
 		Set-Alias z Search-NavigationHistory
+
 		function Prompt {
 			Update-NavigationHistory $pwd.Path
 		}
+
+
+Instead of step 4 you can also create a link:
+
+	cmd /c mklink /d z [Path to z.ps]
 
 
 Usage
@@ -60,4 +66,4 @@ This program is free software. It comes without any warranty, to the extent perm
 Planned
 -------
 
-Make module installation easier using http://psget.net/
+Make module installation easier using http://psget.net/ or https://www.powershellgallery.com/
